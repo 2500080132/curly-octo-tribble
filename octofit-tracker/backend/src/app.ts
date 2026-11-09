@@ -8,8 +8,11 @@ export function createApp() {
   app.use(express.json());
   app.get('/health', (_request, response) => response.json({ ok: true }));
   app.use('/api', apiRouter);
-  app.use((error: Error & { status?: number }, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-    response.status(error.status ?? 500).json({ error: error.message });
+  app.use((error: Error & { status?: number; code?: number; type?: string }, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
+    const status = error.status
+      ?? (error.name === 'ValidationError' || error.name === 'CastError' || error.type === 'entity.parse.failed' ? 400 : undefined)
+      ?? (error.code === 11000 ? 409 : 500);
+    response.status(status).json({ error: error.message });
   });
   return app;
 }

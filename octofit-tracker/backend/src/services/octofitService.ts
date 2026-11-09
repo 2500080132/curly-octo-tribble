@@ -48,14 +48,20 @@ export async function createActivity(input: unknown) {
   const userId = requireObjectId(body.userId, 'userId');
   const teamId = requireObjectId(body.teamId, 'teamId');
   const type = requireText(body, 'type').toLowerCase();
+  if (!['run', 'cycle', 'strength', 'walk', 'swim', 'yoga', 'other'].includes(type)) {
+    throw badRequest('type is not a supported activity');
+  }
   const minutes = requirePositiveNumber(body.minutes, 'minutes');
+  if (body.occurredAt !== undefined && typeof body.occurredAt !== 'string' && !(body.occurredAt instanceof Date)) {
+    throw badRequest('occurredAt must be a valid date');
+  }
   const occurredAt = body.occurredAt === undefined ? new Date() : new Date(String(body.occurredAt));
 
   if (Number.isNaN(occurredAt.getTime())) throw badRequest('occurredAt must be a valid date');
   const [user, team] = await Promise.all([User.exists({ _id: userId }), Team.exists({ _id: teamId })]);
   if (!user || !team) throw badRequest('userId and teamId must reference existing records');
 
-  return Activity.create({ user: userId, team: teamId, type, minutes, points: Math.round(minutes), occurredAt });
+  return Activity.create({ user: userId, team: teamId, type, minutes, points: minutes, occurredAt });
 }
 
 export async function listTeams() {

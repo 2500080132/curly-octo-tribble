@@ -6,7 +6,7 @@ const activitySchema = new Schema({
   type: { type: String, required: true, enum: ['run', 'cycle', 'strength', 'walk', 'swim', 'yoga', 'other'] },
   minutes: { type: Number, required: true, min: 1 },
   points: { type: Number, required: true, min: 1 },
-  occurredAt: { type: Date, required: true, default: Date.now },
+  occurredAt: { type: Date, required: true },
 });
 
 export const Activity = model('Activity', activitySchema);
